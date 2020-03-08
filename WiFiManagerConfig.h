@@ -1,7 +1,7 @@
 #ifndef WiFiManagerConfig_h
 #define WiFiManagerConfig_h
 
-#include <WifiManager.h>
+#include <WiFiManager.h>
 
 #ifndef CONFIG_FILE_PATH
 #define CONFIG_FILE_PATH "/config.json"
