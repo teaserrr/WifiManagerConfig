@@ -4,6 +4,7 @@
 #include "WiFiManagerConfig.h"
 
 void saveConfigCallback() {
+	WiFiManagerConfig::_instance->updateValuesFromWifiManager();
 	WiFiManagerConfig::_instance->saveConfiguration();
 }
 
@@ -47,7 +48,7 @@ const char* ConfigParameter::getValue() {
   return _value;
 }
 
-void ConfigParameter::updateValueFromConfig() {
+void ConfigParameter::updateValueFromWifiManager() {
   setValue(getWifiManagerParameter()->getValue());
 }
 
@@ -82,6 +83,7 @@ WiFiManagerConfig::~WiFiManagerConfig()
     free(_params);
   }
 }
+
 const char *WiFiManagerConfig::getValue(const char *id) {
 	ConfigParameter* p = getParameter(id);
 	if (p == NULL)
@@ -91,6 +93,18 @@ const char *WiFiManagerConfig::getValue(const char *id) {
 
 int WiFiManagerConfig::getIntValue(const char *id) {
 	return atoi(getValue(id));
+}
+
+void WiFiManagerConfig::setValue(const char *id, const char *value) {
+	ConfigParameter* p = getParameter(id);
+	if (p == NULL)
+		return;
+	p->setValue(value);
+}
+
+void WiFiManagerConfig::setValue(const char *id, int value) {
+  char buffer[8];
+	setValue(id, itoa(value, buffer, 10));
 }
 
 void WiFiManagerConfig::init(WiFiManager& wifiManager) {
@@ -137,14 +151,15 @@ void WiFiManagerConfig::initFileSystem() {
           DEBUG_WM(F("parsed json"));
           
           serializeJson(doc, Serial);
-          DEBUG_WM(F(""));
+          Serial.println("");
+
 
           for (int i = 0; i < _paramsCount; i++) {
             const char* id = _params[i]->getId();
             const char* value = doc[id];
-            DEBUG_WM(id);
+            //DEBUG_WM(id);
             if (value != NULL) {
-              DEBUG_WM(value);
+              //DEBUG_WM(value);
               _params[i]->setValue(value);
             }
           }
@@ -189,23 +204,29 @@ void WiFiManagerConfig::addParameter(ConfigParameter *p) {
   _paramsCount++;
 }
 
+void WiFiManagerConfig::updateValuesFromWifiManager() {	
+	for (int i = 0; i < _paramsCount; i++) {
+    _params[i]->updateValueFromWifiManager();
+	}
+}
+
 void WiFiManagerConfig::saveConfiguration() {
 	DEBUG_WM(F("Saving parameters"));
 	DynamicJsonDocument doc(_paramsCount * 256);
 	
 	for (int i = 0; i < _paramsCount; i++) {
-    _params[i]->updateValueFromConfig();
 		doc[_params[i]->getId()] = _params[i]->getValue();
-	}  
-	
-    File configFile = SPIFFS.open(CONFIG_FILE_PATH, "w");
-    if (!configFile) {
-      DEBUG_WM(F("failed to open config file for writing"));
-    }
+  }  
 
-    serializeJson(doc, Serial);
-	  serializeJson(doc, configFile);
-    configFile.close();
+  File configFile = SPIFFS.open(CONFIG_FILE_PATH, "w");
+  if (!configFile) {
+    DEBUG_WM(F("failed to open config file for writing"));
+  }
+
+  serializeJson(doc, Serial);
+  Serial.println("");
+  serializeJson(doc, configFile);
+  configFile.close();
 }
 
 template <typename Generic>

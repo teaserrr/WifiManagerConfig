@@ -18,7 +18,7 @@ class ConfigParameter {
 	WiFiManagerParameter* getWifiManagerParameter();
 	
 	void setValue(const char *value);		
-	void updateValueFromConfig();
+	void updateValueFromWifiManager();
 	
   private:
 	const char *_id;
@@ -31,7 +31,6 @@ class ConfigParameter {
 	
 	void init(const char *id, const char *description, const char *defaultValue, int length, const char *custom);
 	void initFileSystem();
-	void saveConfigCallback();
 };
 	
 class WiFiManagerConfig
@@ -42,7 +41,10 @@ class WiFiManagerConfig
 	
 	void init(WiFiManager& wifiManager);
 	void addParameter(const char *id, const char *description, const char *defaultValue, int length);
+	void updateValuesFromWifiManager();
 	void saveConfiguration();
+	void setValue(const char *id, const char *value);
+	void setValue(const char *id, int value);
 	
     const char *getValue(const char *id);
     int getIntValue(const char *id);
