@@ -15,9 +15,10 @@ class ConfigParameter {
 
 	const char *getId();
 	const char *getValue();
-	WiFiManagerParameter getWifiManagerParameter();
+	WiFiManagerParameter* getWifiManagerParameter();
 	
 	void setValue(const char *value);		
+	void updateValueFromConfig();
 	
   private:
 	const char *_id;
@@ -25,6 +26,8 @@ class ConfigParameter {
 	char       *_value;
 	int         _length;
 	const char *_customHTML;
+
+	WiFiManagerParameter* _wmParam = NULL;
 	
 	void init(const char *id, const char *description, const char *defaultValue, int length, const char *custom);
 	void initFileSystem();
